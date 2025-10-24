@@ -5,6 +5,7 @@ import (
 	"github.com/richardgong1987/server/global"
 	"github.com/richardgong1987/server/model/common/response"
 	"github.com/richardgong1987/server/model/system"
+	"github.com/richardgong1987/server/model/system/request"
 	"go.uber.org/zap"
 )
 
@@ -116,10 +117,17 @@ func (s *DictionaryApi) FindSysDictionary(c *gin.Context) {
 // @Security  ApiKeyAuth
 // @accept    application/json
 // @Produce   application/json
+// @Param     data  query     request.SysDictionarySearch                                    true  "字典 name 或者 type"
 // @Success   200   {object}  response.Response{data=response.PageResult,msg=string}  "分页获取SysDictionary列表,返回包括列表,总数,页码,每页数量"
 // @Router    /sysDictionary/getSysDictionaryList [get]
 func (s *DictionaryApi) GetSysDictionaryList(c *gin.Context) {
-	list, err := dictionaryService.GetSysDictionaryInfoList()
+	var dictionary request.SysDictionarySearch
+	err := c.ShouldBindQuery(&dictionary)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	list, err := dictionaryService.GetSysDictionaryInfoList(c, dictionary)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)

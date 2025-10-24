@@ -18,6 +18,11 @@ func init() {
 	RegisterTool(&DictionaryQuery{})
 }
 
+type DictionaryPre struct {
+	Type string `json:"type"` // 字典名（英）
+	Desc string `json:"desc"` // 描述
+}
+
 // DictionaryInfo 字典信息结构
 type DictionaryInfo struct {
 	ID      uint                   `json:"id"`
