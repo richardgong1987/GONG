@@ -3,6 +3,12 @@ package system
 import (
 	"context"
 	"fmt"
+	"go/token"
+	"os"
+	"path/filepath"
+	"strings"
+	"text/template"
+
 	"github.com/pkg/errors"
 	"github.com/richardgong1987/server/global"
 	common "github.com/richardgong1987/server/model/common/request"
@@ -11,12 +17,7 @@ import (
 	"github.com/richardgong1987/server/utils"
 	"github.com/richardgong1987/server/utils/ast"
 	"github.com/richardgong1987/server/utils/autocode"
-	"go/token"
 	"gorm.io/gorm"
-	"os"
-	"path/filepath"
-	"strings"
-	"text/template"
 )
 
 var AutoCodePackage = new(autoCodePackage)
@@ -162,7 +163,6 @@ func (s *autoCodePackage) All(ctx context.Context) (entities []model.SysAutoCode
 				"api":        true,
 				"config":     true,
 				"initialize": true,
-				"model":      true,
 				"plugin":     true,
 				"router":     true,
 				"service":    true,
@@ -179,14 +179,25 @@ func (s *autoCodePackage) All(ctx context.Context) (entities []model.SysAutoCode
 					}
 				}
 			}
-			if len(dirNameMap) != 0 {
-				continue
+
+			var desc string
+			if len(dirNameMap) == 0 {
+				// 完全符合标准结构
+				desc = "系统自动读取" + pluginDir[i].Name() + "插件，使用前请确认是否为v2版本插件"
+			} else {
+				// 缺少某些结构，生成警告描述
+				var missingDirs []string
+				for dirName := range dirNameMap {
+					missingDirs = append(missingDirs, dirName)
+				}
+				desc = fmt.Sprintf("系统自动读取，但是缺少 %s 结构，不建议自动化和mcp使用", strings.Join(missingDirs, "、"))
 			}
+
 			pluginPackage := model.SysAutoCodePackage{
 				PackageName: pluginDir[i].Name(),
 				Template:    "plugin",
 				Label:       pluginDir[i].Name() + "插件",
-				Desc:        "系统自动读取" + pluginDir[i].Name() + "插件，使用前请确认是否为v2版本插件",
+				Desc:        desc,
 				Module:      global.GVA_CONFIG.AutoCode.Module,
 			}
 			plugin = append(plugin, pluginPackage)
