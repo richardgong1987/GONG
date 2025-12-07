@@ -1,16 +1,11 @@
 package system
 
 import (
-	"fmt"
-	"github.com/goccy/go-json"
 	"github.com/richardgong1987/server/model/common"
-	"io"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/richardgong1987/server/global"
 	"github.com/richardgong1987/server/model/common/response"
-	"github.com/richardgong1987/server/utils/request"
 	"go.uber.org/zap"
 )
 
@@ -108,48 +103,15 @@ func (autoApi *AutoCodeApi) GetColumn(c *gin.Context) {
 
 func (autoApi *AutoCodeApi) LLMAuto(c *gin.Context) {
 	var llm common.JSONMap
-	err := c.ShouldBindJSON(&llm)
-	if err != nil {
+	if err := c.ShouldBindJSON(&llm); err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if global.GVA_CONFIG.AutoCode.AiPath == "" {
-		response.FailWithMessage("请先前往插件市场个人中心获取AiPath并填入config.yaml中", c)
-		return
-	}
-
-	path := strings.ReplaceAll(global.GVA_CONFIG.AutoCode.AiPath, "{FUNC}", fmt.Sprintf("api/chat/%s", llm["mode"]))
-	res, err := request.HttpRequest(
-		path,
-		"POST",
-		nil,
-		nil,
-		llm,
-	)
+	data, err := autoCodeService.LLMAuto(c.Request.Context(), llm)
 	if err != nil {
 		global.GVA_LOG.Error("大模型生成失败!", zap.Error(err))
 		response.FailWithMessage("大模型生成失败"+err.Error(), c)
 		return
 	}
-	var resStruct response.Response
-	b, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		global.GVA_LOG.Error("大模型生成失败!", zap.Error(err))
-		response.FailWithMessage("大模型生成失败"+err.Error(), c)
-		return
-	}
-	err = json.Unmarshal(b, &resStruct)
-	if err != nil {
-		global.GVA_LOG.Error("大模型生成失败!", zap.Error(err))
-		response.FailWithMessage("大模型生成失败"+err.Error(), c)
-		return
-	}
-
-	if resStruct.Code == 7 {
-		global.GVA_LOG.Error("大模型生成失败!"+resStruct.Msg, zap.Error(err))
-		response.FailWithMessage("大模型生成失败"+resStruct.Msg, c)
-		return
-	}
-	response.OkWithData(resStruct.Data, c)
+	response.OkWithData(data, c)
 }

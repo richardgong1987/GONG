@@ -9,6 +9,7 @@ import (
 	"github.com/richardgong1987/server/model/example"
 	"github.com/richardgong1987/server/model/example/request"
 	"github.com/richardgong1987/server/utils/upload"
+	"gorm.io/gorm"
 )
 
 //@author: [piexlmax](https://github.com/piexlmax)
@@ -107,7 +108,13 @@ func (e *FileUploadAndDownloadService) UploadFile(header *multipart.FileHeader, 
 		Key:     key,
 	}
 	if noSave == "0" {
-		return f, e.Upload(f)
+		// 检查是否已存在相同key的记录
+		var existingFile example.ExaFileUploadAndDownload
+		err = global.GVA_DB.Where(&example.ExaFileUploadAndDownload{Key: key}).First(&existingFile).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return f, e.Upload(f)
+		}
+		return f, err
 	}
 	return f, nil
 }

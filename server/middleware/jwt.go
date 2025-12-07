@@ -2,11 +2,12 @@ package middleware
 
 import (
 	"errors"
+	"strconv"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/richardgong1987/server/global"
 	"github.com/richardgong1987/server/utils"
-	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/richardgong1987/server/model/common/response"
@@ -59,7 +60,7 @@ func JWTAuth() gin.HandlerFunc {
 			newClaims, _ := j.ParseToken(newToken)
 			c.Header("new-token", newToken)
 			c.Header("new-expires-at", strconv.FormatInt(newClaims.ExpiresAt.Unix(), 10))
-			utils.SetToken(c, newToken, int(dr.Seconds()))
+			utils.SetToken(c, newToken, int(dr.Seconds()/60))
 			if global.GVA_CONFIG.System.UseMultipoint {
 				// 记录新的活跃jwt
 				_ = utils.SetRedisJWT(newToken, newClaims.Username)
