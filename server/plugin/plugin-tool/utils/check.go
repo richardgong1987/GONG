@@ -51,3 +51,33 @@ func RegisterMenus(menus ...system.SysBaseMenu) {
 	}
 
 }
+
+func RegisterDictionaries(dictionaries ...system.SysDictionary) {
+	err := global.GVA_DB.Transaction(func(tx *gorm.DB) error {
+		for _, dict := range dictionaries {
+			details := dict.SysDictionaryDetails
+			dict.SysDictionaryDetails = nil
+			err := tx.Model(system.SysDictionary{}).Where("type = ?", dict.Type).FirstOrCreate(&dict).Error
+			if err != nil {
+				zap.L().Error("注册字典失败", zap.Error(err), zap.String("type", dict.Type))
+				return err
+			}
+			for _, detail := range details {
+				detail.SysDictionaryID = int(dict.ID)
+				err = tx.Model(system.SysDictionaryDetail{}).Where("sys_dictionary_id = ? AND value = ?", dict.ID, detail.Value).FirstOrCreate(&detail).Error
+				if err != nil {
+					zap.L().Error("注册字典详情失败", zap.Error(err), zap.String("value", detail.Value))
+					return err
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		zap.L().Error("注册字典失败", zap.Error(err))
+	}
+}
+
+func Pointer[T any](in T) *T {
+	return &in
+}

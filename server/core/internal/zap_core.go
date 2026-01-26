@@ -76,10 +76,6 @@ func (z *ZapCore) Write(entry zapcore.Entry, fields []zapcore.Field) error {
 		if strings.Contains(entry.Caller.File, "gorm_logger_writer.go") {
 			return err
 		}
-		// 避免重复记录 panic 恢复日志，panic 由 GinRecovery 单独捕捉入库
-		if strings.Contains(entry.Message, "[Recovery from panic]") {
-			return err
-		}
 
 		form := "后端"
 		level := entry.Level.String()

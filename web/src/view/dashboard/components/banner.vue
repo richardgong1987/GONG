@@ -1,8 +1,3 @@
-<!--
-    @auther: bypanghu<bypanghu@163.com>
-    @date: 2024/5/8
-!-->
-
 <template>
   <el-carousel class="-mt-2">
     <el-carousel-item
@@ -27,15 +22,15 @@
   const banners = [
     {
       img: banner,
-      link: 'https://gong-vue-admin.com/empower/index.html'
+      link: 'https://plugin.gin-vue-admin.com/license'
     },
     {
       img: banner2,
-      link: 'https://plugin.gong-vue-admin.com'
+      link: 'https://plugin.gin-vue-admin.com'
     },
     {
       img: 'https://qmplusimg.henrongyi.top/gvaDemo/k8s.jpg',
-      link: 'https://plugin.gong-vue-admin.com/#/layout/newPluginInfo?id=42'
+      link: 'https://plugin.gin-vue-admin.com/#/layout/newPluginInfo?id=42'
     }
   ]
 </script>
