@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/richardgong1987/server/plugin/announcement"
+	_ "github.com/richardgong1987/server/plugin"
 	"github.com/richardgong1987/server/utils/plugin/v2"
 )
 
@@ -12,5 +12,5 @@ func PluginInitV2(group *gin.Engine, plugins ...plugin.Plugin) {
 	}
 }
 func bizPluginV2(engine *gin.Engine) {
-	PluginInitV2(engine, announcement.Plugin)
+	PluginInitV2(engine, plugin.Registered()...)
 }
